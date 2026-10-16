@@ -200,6 +200,10 @@ svg.layer{overflow:visible;pointer-events:none}
 .pre b{font-weight:400;display:block}
 .pre small{font-weight:300;color:var(--muted);font-size:12.5px}
 .pre-row{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.off{font-size:13px;font-weight:300;color:var(--muted);display:flex;align-items:center;gap:8px;min-height:20px}
+.off::before{content:"";width:8px;height:8px;border-radius:50%;background:#FF9500;flex:none}
+.off[data-ok="1"]::before{background:#34C759}
+.off:empty::before{display:none}
 .home-rec{width:min(520px,100%);text-align:left;margin-top:18px}
 .home-rec h3{font-size:13px;font-weight:500;color:var(--muted);margin:0 0 4px}
 .bigbtn:disabled{opacity:.4;cursor:default}
@@ -267,7 +271,7 @@ svg.layer{overflow:visible;pointer-events:none}
     <textarea id="textIn" hidden placeholder="Escreva a nota"></textarea>
     <div id="finish" class="float" hidden></div>
     <div id="insp" class="float" hidden></div>
-    <div id="empty" hidden><svg class="ic" viewBox="0 0 24 24" style="width:44px;height:44px;stroke-width:1.1;color:var(--muted)"><path d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5z"/><path d="M14 3v4.5h4.5M8.5 17l7-7M8.5 15l1 1M11 12.5l1 1M13.5 10l1 1"/></svg><h2>Abra um PDF do projeto</h2><p>A escala é lida da própria folha. As medições e notas ficam guardadas só neste dispositivo.</p><div class="e-act"><button class="btn primary" id="eOpen">Escolher PDF</button><button class="btn" id="eRecent" hidden>Abertos recentemente</button></div><div class="home-rec" id="homeRec"></div></div>
+    <div id="empty" hidden><svg class="ic" viewBox="0 0 24 24" style="width:44px;height:44px;stroke-width:1.1;color:var(--muted)"><path d="M14 3H7a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 7 21h10a1.5 1.5 0 0 0 1.5-1.5V7.5z"/><path d="M14 3v4.5h4.5M8.5 17l7-7M8.5 15l1 1M11 12.5l1 1M13.5 10l1 1"/></svg><h2>Abra um PDF do projeto</h2><p>A escala é lida da própria folha. As medições e notas ficam guardadas só neste dispositivo.</p><div class="e-act"><button class="btn primary" id="eOpen">Escolher PDF</button><button class="btn" id="eRecent" hidden>Abertos recentemente</button></div><p id="offState" class="off"></p><div class="home-rec" id="homeRec"></div></div>
     <button id="fStyle" hidden title="Padrão, cor e espessura"><svg id="styPrev" viewBox="0 0 36 14"></svg><span id="styLbl">Estilo</span></button>
     <div id="zoomWrap" hidden><button class="chip" id="scaleChip" title="Escala da folha"><i class="dot"></i><span id="scaleTxt">Escala</span></button><div id="zoom"><button id="zOut" aria-label="Afastar">−</button><button id="zFit" title="Ajustar à janela">100%</button><button id="zIn" aria-label="Aproximar">+</button></div></div>
   </main>
@@ -359,7 +363,17 @@ const DB=(()=>{let dbp=null;
 
 if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js'; }
 /* versão instalada: funciona sem rede e pede ao navegador para não apagar os dados guardados */
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+async function offlineState(){const el=document.getElementById('offState');if(!el)return;
+  try{ if(!('serviceWorker' in navigator)||!window.caches){el.textContent='';return;}
+    const ok=!!(await caches.match('pdf.worker.min.js'))&&!!navigator.serviceWorker.controller;
+    el.dataset.ok=ok?'1':'';el.textContent=ok?'Pronta para usar sem rede':'A preparar para usar sem rede. Mantenha a app aberta, com internet, uns segundos.';
+    if(!ok) setTimeout(offlineState,1500);
+  }catch{} }
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(offlineState).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',offlineState);
+}
+setTimeout(offlineState,300);
 try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch{}
 
 /* ---------- estado ---------- */
