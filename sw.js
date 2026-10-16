@@ -1,6 +1,6 @@
 /* Escalímetro: guarda a app no dispositivo para funcionar sem rede.
    Para publicar uma versão nova, mude o número em VERSAO. */
-const VERSAO = 'escalimetro-v2';
+const VERSAO = 'escalimetro-v3';
 const FICHEIROS = [
   './', 'index.html', 'manifest.webmanifest',
   'pdf.min.js', 'pdf.worker.min.js', 'pdf-lib.min.js',

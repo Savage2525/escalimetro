@@ -22,6 +22,9 @@
 @font-face{font-family:'Jost';font-style:normal;font-weight:500;font-display:swap;src:url(jost-500.woff2) format('woff2')}
 *,*::before,*::after{box-sizing:border-box}
 :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{background:var(--surface,#F8F9FA)}
+/* app aberta pelo ícone do ecrã principal: deixa livre a barra de estado do iPad (hora, bateria) */
+@media (display-mode: standalone){ :root{padding-top:max(env(safe-area-inset-top,0px),24px)} }
 body{margin:0;font-size:14px}
 img{max-width:100%}
 /* Layout: mesa de desenho — ferramentas à esquerda, folha ao centro, registo de medições à direita */
